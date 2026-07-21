@@ -402,7 +402,31 @@ a:focus-visible, button:focus-visible{
 
 footer{ padding:50px 20px 60px; text-align:center; color:var(--ink-faint); font-size:14px; position:relative; z-index:2; }
 
+.music-toggle{
+  position:fixed;
+  right:18px; bottom:18px;
+  z-index:1500;
+  width:48px; height:48px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(155deg,var(--card),var(--surface));
+  border:1px solid var(--line);
+  box-shadow:0 10px 24px rgba(0,0,0,.4), 0 0 22px -6px rgba(var(--g2),.45);
+  cursor:pointer;
+  color:var(--gold-soft);
+  font-size:18px;
+  transition:transform .35s var(--ease), box-shadow .35s var(--ease-soft);
+}
+.music-toggle:hover{ transform:translateY(-3px); box-shadow:0 16px 30px rgba(0,0,0,.5), 0 0 28px -6px rgba(var(--g2),.6); }
+.music-toggle:active{ transform:translateY(-1px) scale(.95); }
+.music-toggle .m-icon{ display:none; }
+.music-toggle .m-icon.on{ display:block; animation:pulseNote 1.8s ease-in-out infinite; }
+.music-toggle.muted .m-icon.on{ display:none; }
+.music-toggle.muted .m-icon.off{ display:block; }
+@keyframes pulseNote{ 0%,100%{ opacity:1; transform:scale(1); } 50%{ opacity:.6; transform:scale(.85); } }
+
 @media(max-width:700px){
+  .music-toggle{ width:42px; height:42px; right:14px; bottom:14px; font-size:16px; }
   .hero{ padding:48px 24px; }
   .hero h1{ font-size:32px; }
   .hero p{ font-size:16px; }
@@ -534,7 +558,36 @@ footer{ padding:50px 20px 60px; text-align:center; color:var(--ink-faint); font-
 
 <footer>Made with sincerity 🌸</footer>
 
+<button id="musicToggle" class="music-toggle" type="button" aria-pressed="true" aria-label="Toggle background music">
+  <span class="m-icon on">♪</span>
+  <span class="m-icon off">♪̶</span>
+</button>
+<audio id="bgMusic" src="Golden_Brown_X_Love_Story.mp3" loop preload="auto"></audio>
+
 <script>
+// ---- Background music (local file, loops, starts on the envelope-open gesture) ----
+const bgMusic = document.getElementById('bgMusic');
+bgMusic.volume = 0.55;
+const musicToggle = document.getElementById('musicToggle');
+
+function startMusic(){
+  bgMusic.play().catch(()=>{ /* will retry on next user interaction if blocked */ });
+  musicToggle.classList.remove('muted');
+  musicToggle.setAttribute('aria-pressed','true');
+}
+function toggleMusic(){
+  if(bgMusic.paused){
+    bgMusic.play();
+    musicToggle.classList.remove('muted');
+    musicToggle.setAttribute('aria-pressed','true');
+  } else {
+    bgMusic.pause();
+    musicToggle.classList.add('muted');
+    musicToggle.setAttribute('aria-pressed','false');
+  }
+}
+musicToggle.addEventListener('click', toggleMusic);
+
 // ---- Envelope gate ----
 const gate = document.getElementById('gate');
 const envelope = document.getElementById('envelope');
@@ -542,6 +595,7 @@ const trigger = document.getElementById('envelopeTrigger');
 
 function openGate(){
   envelope.classList.add('open');
+  startMusic();
   setTimeout(()=>{
     gate.classList.add('hidden');
     document.body.classList.remove('locked');
