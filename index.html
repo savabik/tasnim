@@ -15,9 +15,9 @@
 <style>
 :root{
   /* golden-hour dusk — deep, warm, no pure black / no pure white */
-  --bg-0:#0f0a07;
-  --bg-1:#17100b;
-  --bg-2:#20160e;
+  --bg-0:#0a0705;
+  --bg-1:#120c08;
+  --bg-2:#1c130c;
   --surface:#251a12;
   --surface-2:#2c1f15;
   --card:#2a1d14;
@@ -103,6 +103,48 @@ body::after{
 @keyframes driftA{ 0%{transform:translate3d(0,0,0) scale(1); opacity:.7;} 100%{transform:translate3d(60px,40px,0) scale(1.14); opacity:.5;} }
 @keyframes driftB{ 0%{transform:translate3d(0,0,0) scale(1); opacity:.55;} 100%{transform:translate3d(-55px,55px,0) scale(1.1); opacity:.85;} }
 @keyframes driftC{ 0%{transform:translate3d(0,0,0) scale(1); opacity:.65;} 100%{transform:translate3d(40px,-30px,0) scale(1.12); opacity:.42;} }
+
+/* golden glow along the bottom, like light on a dark pond */
+.golden-water{
+  position:fixed;
+  left:0; right:0; bottom:0;
+  height:34vh;
+  min-height:240px;
+  z-index:0;
+  pointer-events:none;
+  overflow:hidden;
+}
+.golden-water::before{
+  content:"";
+  position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 100%, rgba(var(--g2),.32), transparent 70%),
+    radial-gradient(ellipse 50% 45% at 30% 100%, rgba(var(--g1),.24), transparent 70%),
+    radial-gradient(ellipse 50% 45% at 74% 100%, rgba(var(--g1),.24), transparent 70%),
+    linear-gradient(0deg, rgba(var(--g1),.18), transparent 75%);
+  animation:waterGlow 8s ease-in-out infinite alternate;
+}
+@keyframes waterGlow{
+  0%{ opacity:.7; }
+  50%{ opacity:1; }
+  100%{ opacity:.8; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .golden-water::before{ animation:none; }
+}
+
+/* twinkling golden stars */
+.sparkle{
+  position:fixed; border-radius:50%; pointer-events:none; z-index:0;
+  will-change:transform,opacity;
+  background:radial-gradient(circle,#fff9ec,var(--gold-soft) 40%,rgba(var(--g2),0) 72%);
+  box-shadow:0 0 6px 1px rgba(var(--g2),.8);
+}
+@keyframes twinkle{
+  0%,100%{ opacity:.15; transform:scale(.6); }
+  50%{ opacity:1; transform:scale(1); }
+}
 
 a:focus-visible, button:focus-visible{
   outline:3px solid var(--gold);
@@ -442,6 +484,7 @@ footer{ padding:50px 20px 60px; text-align:center; color:var(--ink-faint); font-
 <body class="locked">
 
 <div class="ambient" aria-hidden="true"><span></span><span></span><span></span></div>
+<div class="golden-water" aria-hidden="true"></div>
 
 <div id="gate">
   <div class="envelope-wrap" id="envelopeTrigger" role="button" tabindex="0" aria-label="খুলে দেখো">
@@ -686,6 +729,24 @@ if(!prefersReducedMotion){
     setTimeout(()=>f.remove(), duration);
   }
   setInterval(createFlower, 1100);
+
+  function createSparkle(){
+    const s = document.createElement('div');
+    s.className = 'sparkle';
+    const size = 2 + Math.random()*3.5;
+    s.style.width = size+'px';
+    s.style.height = size+'px';
+    s.style.left = Math.random()*100+'vw';
+    s.style.top = Math.random()*100+'vh';
+    const twinkleDur = 2.2 + Math.random()*3;
+    const lifespan = 5000+Math.random()*7000;
+    s.style.animation = `twinkle ${twinkleDur}s ease-in-out infinite`;
+    s.style.animationDelay = (Math.random()*twinkleDur)+'s';
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(), lifespan);
+  }
+  for(let i=0;i<26;i++) setTimeout(createSparkle, i*90);
+  setInterval(createSparkle, 420);
 
   glow = document.createElement('div');
   glow.style.position='fixed';
